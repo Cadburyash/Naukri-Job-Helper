@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font: 13px Arial, sans-serif; width: 330px; padding: 14px; color: #172033; }
+    h2 { font-size: 17px; margin: 0 0 10px; }
+    label { display:block; margin: 10px 0 5px; font-weight: 600; }
+    input, textarea, select { box-sizing:border-box; width:100%; padding:8px; border:1px solid #cbd3e1; border-radius:7px; }
+    textarea { min-height: 62px; resize: vertical; }
+    .row { display:flex; gap:10px; }
+    .row > div { flex:1; }
+    button { border:0; border-radius:8px; padding:10px; cursor:pointer; font-weight:700; width:100%; margin-top:10px; }
+    #start { background:#2557ff; color:white; }
+    #stop { background:#eef1f7; color:#172033; }
+    #status { margin-top:10px; white-space:pre-wrap; line-height:1.4; color:#44516a; }
+    .note { color:#65718a; font-size:11px; line-height:1.4; margin-top:8px; }
+  </style>
+</head>
+<body>
+  <h2>Naukri Job Helper</h2>
+  <div>Runs on the currently open Naukri job-listing page.</div>
+  <label for="categories">Optional job categories (comma-separated)</label>
+  <textarea id="categories" placeholder="Java Developer, Backend Developer, Spring Boot Developer"></textarea>
+  <div class="note">Leave blank to consider all jobs on the page that match the experience filter. Matching uses job title text.</div>
+  <div class="row">
+    <div><label for="maxJobs">Maximum jobs</label><input id="maxJobs" type="number" min="1" max="25" value="25"></div>
+    <div><label for="delay">Delay (seconds)</label><input id="delay" type="number" min="10" max="120" value="10"></div>
+  </div>
+  <label for="mode">Mode</label>
+  <select id="mode">
+    <option value="assist">Assist: open job tabs and click Apply</option>
+    <option value="review">Review only: open matching job tabs, do not click Apply</option>
+  </select>
+  <button id="start">Start on this page</button>
+  <button id="stop">Stop after current job</button>
+  <div id="status">Ready. Choose options and start.</div>
+  <div class="note">Question forms and external application sites are left open. A Naukri tab is closed only when a clear application-success message is detected. Check every application and stop if a page behaves unexpectedly.</div>
+  <script src="popup.js"></script>
+</body>
+</html>
