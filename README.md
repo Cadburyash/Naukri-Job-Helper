@@ -1,19 +1,16 @@
-# Naukri-Job-Helper
-A Chrome extension that streamlines job applications on Naukri with customizable experience filters, job categories, application limits, and processing delays, while supporting manual review of complex applications.
+# Naukri Job Helper — v1.1.0
 
-
-# Naukri Job Helper — v1.0.0
-
-The initial prototype of Naukri Job Helper. This version explores a sequential workflow for collecting jobs, opening job details in separate tabs, and assisting with applications.
+Version 1.1.0 improves job discovery for the Naukri listing layout used during testing.
 
 > Independent community project; not affiliated with or endorsed by Naukri. This README describes the intended behavior and known limitations of this version. Test the exact release you download before relying on it.
 
 ## Features in this version
 
-- Initial Chrome extension popup and job-processing workflow.
-- Initial job limit and delay controls for processing jobs sequentially.
-- Basic attempt to locate and click the Apply control on a job-detail page.
-- Basic handling intended to leave application flows requiring manual attention open.
+- Finds job cards using the `article.jobTuple` structure.
+- Reads the job ID from the card's `data-job-id` attribute.
+- Reads the job title and experience information from the card text.
+- Builds a job-detail URL using card metadata and the job ID, since the title was not an ordinary anchor in the tested layout.
+- Retains the sequential tab-processing concept from the initial prototype.
 
 ## Installation
 
@@ -35,13 +32,13 @@ The initial prototype of Naukri Job Helper. This version explores a sequential w
 
 ## Settings and behavior
 
-Settings and behavior were prototype-level and may differ from later versions.
+Use a small job limit while verifying that the extension opens the correct job detail page.
 
 ## Known limitations
 
-- The first version relied on assumptions about ordinary job-detail links.
-- On the Naukri Recommended Jobs layout tested later, it could find zero jobs because job cards did not expose a normal job-title anchor.
-- Job URL detection, experience filtering, and application-state detection were prototypes and require careful testing.
+- Constructed URLs must be verified against the selected job before running a batch.
+- Experience filtering and page detection depend on Naukri's rendered text and markup.
+- Only jobs loaded on the current page are considered.
 
 
 ## Responsible use and limitations
@@ -58,6 +55,7 @@ Settings and behavior were prototype-level and may differ from later versions.
 ## Version history
 
 - **v1.0.0:** Initial prototype.
+- **v1.1.0:** Job-card detection based on `article.jobTuple` and `data-job-id`.
 
 ## Feedback
 
