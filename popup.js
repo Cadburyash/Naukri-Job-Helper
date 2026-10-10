@@ -4,7 +4,7 @@ async function refreshStatus() {
   const state = await chrome.storage.local.get(['naukriRunState']);
   const s = state.naukriRunState;
   if (s) {
-    $('status').textContent = `${s.running ? 'Running' : 'Stopped'}\nOpened: ${s.opened || 0} / ${s.maxJobs || 25}\nApplied-success pages closed: ${s.success || 0}\nLeft open for review: ${s.leftOpen || 0}\n${s.message || ''}`;
+    $('status').textContent = `${s.running ? 'Running' : 'Stopped'}\nNew jobs processed: ${s.opened || 0} / ${s.maxJobs || 25}\nAlready-applied jobs skipped: ${s.skipped || 0}\nApplied-success pages closed: ${s.success || 0}\nLeft open for review: ${s.leftOpen || 0}\n${s.message || ''}`;
   }
 }
 
@@ -15,7 +15,7 @@ $('start').addEventListener('click', async () => {
     return;
   }
   const maxJobs = Math.max(1, Math.min(25, Number($('maxJobs').value) || 25));
-  const delaySeconds = Math.max(10, Math.min(120, Number($('delay').value) || 10));
+  const delaySeconds = Math.max(1, Math.min(120, Number($('delay').value) || 10));
   const categories = $('categories').value.split(',').map(x => x.trim()).filter(Boolean);
   const mode = $('mode').value;
   await chrome.runtime.sendMessage({ type: 'START_RUN', sourceTabId: tab.id, maxJobs, delayMs: delaySeconds * 1000, categories, mode });

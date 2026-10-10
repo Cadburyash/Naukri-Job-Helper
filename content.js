@@ -32,7 +32,7 @@ function getCardExperience(card) {
   return norm(expEl?.innerText || '');
 }
 
-function collectJobs(categories, maxJobs) {
+function collectJobs(categories) {
   const cards = [...document.querySelectorAll('article.jobTuple[data-job-id], article.jobTuple')];
   const seen = new Set();
   const jobs = [];
@@ -42,6 +42,9 @@ function collectJobs(categories, maxJobs) {
 
     const title = getCardTitle(card);
     const text = norm(card.innerText || '');
+    const alreadyApplied = [...card.querySelectorAll('button, [role="button"], [class*="applied"]')]
+      .filter(visible)
+      .some(el => /^applied$/i.test(norm(el.innerText || el.getAttribute('aria-label') || el.title)));
     const expText = getCardExperience(card) || text;
     if (!experienceMatches(expText)) continue;
     if (categories.length && !categories.some(c => title.toLowerCase().includes(c.toLowerCase()))) continue;
@@ -54,8 +57,7 @@ function collectJobs(categories, maxJobs) {
     const slug = slugify([title, company, location, exp].filter(Boolean).join('-'));
     const url = `https://www.naukri.com/job-listings-${slug}-${id}`;
     seen.add(id);
-    jobs.push({ title, url, jobId: id, experience: expText });
-    if (jobs.length >= maxJobs) break;
+    jobs.push({ title, url, jobId: id, experience: expText, alreadyApplied });
   }
   return jobs;
 }
@@ -66,6 +68,10 @@ function findApplyControl() {
          els.find(el => /^apply$/i.test(norm(el.getAttribute('aria-label'))));
 }
 function pageText() { return norm(document.body?.innerText || ''); }
+function hasAlreadyAppliedControl() {
+  const controls = [...document.querySelectorAll('button, a, [role="button"], input[type="button"], input[type="submit"]')].filter(visible);
+  return controls.some(el => /^applied$/i.test(norm(el.innerText || el.value || el.getAttribute('aria-label') || el.title)));
+}
 function hasSuccessMessage() {
   const t = pageText();
   return /Applied to\s*["“][^"”]+["”]/i.test(t) || /application (?:submitted|successful|successfully submitted)/i.test(t) || /you have successfully applied/i.test(t);
@@ -93,28 +99,32 @@ async function processJob(opts = {}) {
   processStartedAt = Date.now();
   const title = opts.title || document.title || 'Job';
   const mode = opts.mode || 'assist';
-  const waitMs = Math.max(10000, Number(opts.delayMs) || 10000);
+  const waitMs = Math.max(1000, Math.min(120000, Number(opts.delayMs) || 10000));
   try {
     // Give job detail content time to hydrate.
     await delay(waitMs);
+    if (hasAlreadyAppliedControl()) {
+      chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'alreadyApplied', title, jobId: opts.jobId });
+      return;
+    }
     if (hasSuccessMessage()) {
-      chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'success', title });
+      chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'success', title, jobId: opts.jobId });
       return;
     }
     if (questionFormVisible()) {
-      chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'manual', title });
+      chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'manual', title, jobId: opts.jobId });
       return;
     }
     if (mode === 'review') {
-      chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'uncertain', title });
+      chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'uncertain', title, jobId: opts.jobId });
       return;
     }
     const apply = findApplyControl();
     if (!apply) {
       if (hasExternalApplicationLink()) {
-        chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'external', title });
+        chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'external', title, jobId: opts.jobId });
       } else {
-        chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'uncertain', title });
+        chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'uncertain', title, jobId: opts.jobId });
       }
       return;
     }
@@ -124,19 +134,19 @@ async function processJob(opts = {}) {
     while (Date.now() < end) {
       await delay(500);
       if (hasSuccessMessage()) {
-        chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'success', title });
+        chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'success', title, jobId: opts.jobId });
         return;
       }
       if (questionFormVisible()) {
-        chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'manual', title });
+        chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'manual', title, jobId: opts.jobId });
         return;
       }
       if (hasExternalApplicationLink()) {
-        chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'external', title });
+        chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'external', title, jobId: opts.jobId });
         return;
       }
     }
-    chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'uncertain', title });
+    chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'uncertain', title, jobId: opts.jobId });
   } finally {
     processing = false;
   }
@@ -144,7 +154,7 @@ async function processJob(opts = {}) {
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === 'COLLECT_JOBS') {
-    sendResponse({ jobs: collectJobs(msg.categories || [], msg.maxJobs || 25) });
+    sendResponse({ jobs: collectJobs(msg.categories || []) });
   } else if (msg.type === 'PROCESS_JOB') {
     processJob(msg);
     sendResponse({ ok: true });
