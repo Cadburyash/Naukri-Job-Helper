@@ -1,16 +1,18 @@
-# Naukri Job Helper — v1.1.0
+# Naukri Job Helper — v1.2.0
 
-Version 1.1.0 improves job discovery for the Naukri listing layout used during testing.
+Version 1.2.0 adds configurable experience targeting and processing settings, so users are not restricted to a fixed experience range.
 
 > Independent community project; not affiliated with or endorsed by Naukri. This README describes the intended behavior and known limitations of this version. Test the exact release you download before relying on it.
 
 ## Features in this version
 
-- Finds job cards using the `article.jobTuple` structure.
-- Reads the job ID from the card's `data-job-id` attribute.
-- Reads the job title and experience information from the card text.
-- Builds a job-detail URL using card metadata and the job ID, since the title was not an ordinary anchor in the tested layout.
-- Retains the sequential tab-processing concept from the initial prototype.
+- Configurable minimum and maximum experience settings.
+- Optional comma-separated job-title keywords, such as `Java Developer, Backend Developer, Spring Boot Developer`.
+- Configurable maximum jobs per run, up to 25.
+- Configurable delay in seconds between processing steps.
+- Assist mode to open job pages and attempt to click Apply.
+- Review-only mode to open matching job pages without clicking Apply.
+- Question forms, external application flows, and uncertain outcomes are intended to remain open for manual review.
 
 ## Installation
 
@@ -32,13 +34,13 @@ Version 1.1.0 improves job discovery for the Naukri listing layout used during t
 
 ## Settings and behavior
 
-Use a small job limit while verifying that the extension opens the correct job detail page.
+Set the minimum and maximum experience, optional job-title keywords, maximum jobs, delay, and mode in the extension popup.
 
 ## Known limitations
 
-- Constructed URLs must be verified against the selected job before running a batch.
-- Experience filtering and page detection depend on Naukri's rendered text and markup.
-- Only jobs loaded on the current page are considered.
+- At this stage, experience matching was described as requiring the advertised range to fit within the selected range; overlap matching was introduced later.
+- Application and success detection are best-effort and should be supervised.
+- Only currently loaded listings are processed.
 
 
 ## Responsible use and limitations
@@ -56,6 +58,7 @@ Use a small job limit while verifying that the extension opens the correct job d
 
 - **v1.0.0:** Initial prototype.
 - **v1.1.0:** Job-card detection based on `article.jobTuple` and `data-job-id`.
+- **v1.2.0:** Configurable experience range, job-title keywords, batch limit, delay, and review-only mode.
 
 ## Feedback
 
