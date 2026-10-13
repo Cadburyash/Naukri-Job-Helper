@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Naukri Job Helper",
   "version": "1.2.0",
-  "description": "Find Naukri job cards using data-job-id and assist with sequential applications.",
+  "description": "Find Naukri job cards with configurable experience filters and assist with sequential applications.",
   "permissions": [
     "tabs",
     "storage",

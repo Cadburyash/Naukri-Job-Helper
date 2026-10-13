@@ -2,15 +2,16 @@ function norm(s) { return (s || '').replace(/\s+/g, ' ').trim(); }
 function visible(el) { return !!el && el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden'; }
 function delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
-function experienceMatches(text) {
+function experienceMatches(text, minExperience = 0, maxExperience = 4) {
   const t = (text || '').replace(/[–—]/g, '-');
-  // Prefer the dedicated experience row so job-description text does not distort the filter.
   const matches = [...t.matchAll(/\b(\d+)\s*(?:-|to)\s*(\d+)\s*(?:years?|yrs?)\b/ig)];
   for (const m of matches) {
     const min = Number(m[1]), max = Number(m[2]);
-    if (min <= 4 && max <= 4 && min <= max) return true;
+    // Require the entire advertised range to sit inside the user's selected range.
+    if (min <= max && min >= minExperience && max <= maxExperience) return true;
   }
-  return /\b(fresher|freshers|entry[- ]level)\b/i.test(t);
+  if (/\b(fresher|freshers|entry[- ]level)\b/i.test(t)) return minExperience <= 0 && maxExperience >= 0;
+  return false;
 }
 
 function slugify(s) {
@@ -32,7 +33,7 @@ function getCardExperience(card) {
   return norm(expEl?.innerText || '');
 }
 
-function collectJobs(categories) {
+function collectJobs(categories, maxJobs, minExperience = 0, maxExperience = 4) {
   const cards = [...document.querySelectorAll('article.jobTuple[data-job-id], article.jobTuple')];
   const seen = new Set();
   const jobs = [];
@@ -42,11 +43,8 @@ function collectJobs(categories) {
 
     const title = getCardTitle(card);
     const text = norm(card.innerText || '');
-    const alreadyApplied = [...card.querySelectorAll('button, [role="button"], [class*="applied"]')]
-      .filter(visible)
-      .some(el => /^applied$/i.test(norm(el.innerText || el.getAttribute('aria-label') || el.title)));
     const expText = getCardExperience(card) || text;
-    if (!experienceMatches(expText)) continue;
+    if (!experienceMatches(expText, minExperience, maxExperience)) continue;
     if (categories.length && !categories.some(c => title.toLowerCase().includes(c.toLowerCase()))) continue;
 
     // Naukri's current search cards expose data-job-id instead of a job-title anchor.
@@ -57,7 +55,8 @@ function collectJobs(categories) {
     const slug = slugify([title, company, location, exp].filter(Boolean).join('-'));
     const url = `https://www.naukri.com/job-listings-${slug}-${id}`;
     seen.add(id);
-    jobs.push({ title, url, jobId: id, experience: expText, alreadyApplied });
+    jobs.push({ title, url, jobId: id, experience: expText });
+    if (jobs.length >= maxJobs) break;
   }
   return jobs;
 }
@@ -68,10 +67,6 @@ function findApplyControl() {
          els.find(el => /^apply$/i.test(norm(el.getAttribute('aria-label'))));
 }
 function pageText() { return norm(document.body?.innerText || ''); }
-function hasAlreadyAppliedControl() {
-  const controls = [...document.querySelectorAll('button, a, [role="button"], input[type="button"], input[type="submit"]')].filter(visible);
-  return controls.some(el => /^applied$/i.test(norm(el.innerText || el.value || el.getAttribute('aria-label') || el.title)));
-}
 function hasSuccessMessage() {
   const t = pageText();
   return /Applied to\s*["“][^"”]+["”]/i.test(t) || /application (?:submitted|successful|successfully submitted)/i.test(t) || /you have successfully applied/i.test(t);
@@ -99,32 +94,28 @@ async function processJob(opts = {}) {
   processStartedAt = Date.now();
   const title = opts.title || document.title || 'Job';
   const mode = opts.mode || 'assist';
-  const waitMs = Math.max(1000, Math.min(120000, Number(opts.delayMs) || 10000));
+  const waitMs = Math.max(1000, Number(opts.delayMs) || 10000);
   try {
     // Give job detail content time to hydrate.
     await delay(waitMs);
-    if (hasAlreadyAppliedControl()) {
-      chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'alreadyApplied', title, jobId: opts.jobId });
-      return;
-    }
     if (hasSuccessMessage()) {
-      chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'success', title, jobId: opts.jobId });
+      chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'success', title });
       return;
     }
     if (questionFormVisible()) {
-      chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'manual', title, jobId: opts.jobId });
+      chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'manual', title });
       return;
     }
     if (mode === 'review') {
-      chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'uncertain', title, jobId: opts.jobId });
+      chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'uncertain', title });
       return;
     }
     const apply = findApplyControl();
     if (!apply) {
       if (hasExternalApplicationLink()) {
-        chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'external', title, jobId: opts.jobId });
+        chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'external', title });
       } else {
-        chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'uncertain', title, jobId: opts.jobId });
+        chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'uncertain', title });
       }
       return;
     }
@@ -134,19 +125,19 @@ async function processJob(opts = {}) {
     while (Date.now() < end) {
       await delay(500);
       if (hasSuccessMessage()) {
-        chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'success', title, jobId: opts.jobId });
+        chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'success', title });
         return;
       }
       if (questionFormVisible()) {
-        chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'manual', title, jobId: opts.jobId });
+        chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'manual', title });
         return;
       }
       if (hasExternalApplicationLink()) {
-        chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'external', title, jobId: opts.jobId });
+        chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'external', title });
         return;
       }
     }
-    chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'uncertain', title, jobId: opts.jobId });
+    chrome.runtime.sendMessage({ type: 'JOB_RESULT', result: 'uncertain', title });
   } finally {
     processing = false;
   }
@@ -154,7 +145,7 @@ async function processJob(opts = {}) {
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === 'COLLECT_JOBS') {
-    sendResponse({ jobs: collectJobs(msg.categories || []) });
+    sendResponse({ jobs: collectJobs(msg.categories || [], msg.maxJobs || 25, Number(msg.minExperience ?? 0), Number(msg.maxExperience ?? 4)) });
   } else if (msg.type === 'PROCESS_JOB') {
     processJob(msg);
     sendResponse({ ok: true });

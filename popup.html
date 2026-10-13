@@ -27,6 +27,11 @@
     <div><label for="maxJobs">Maximum jobs</label><input id="maxJobs" type="number" min="1" max="25" value="25"></div>
     <div><label for="delay">Delay (seconds)</label><input id="delay" type="number" min="1" max="120" value="10"></div>
   </div>
+  <div class="row">
+    <div><label for="minExperience">Minimum experience (years)</label><input id="minExperience" type="number" min="0" max="40" value="0"></div>
+    <div><label for="maxExperience">Maximum experience (years)</label><input id="maxExperience" type="number" min="0" max="40" value="4"></div>
+  </div>
+  <div class="note">A job is included only when its full advertised experience range fits within your selected minimum and maximum. Example: 0–4 includes 0–2 and 2–4, but excludes 3–5.</div>
   <label for="mode">Mode</label>
   <select id="mode">
     <option value="assist">Assist: open job tabs and click Apply</option>
