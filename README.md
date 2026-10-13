@@ -1,18 +1,16 @@
-# Naukri Job Helper — v1.2.0
+# Naukri Job Helper — v1.2.1
 
-Version 1.2.0 adds configurable experience targeting and processing settings, so users are not restricted to a fixed experience range.
+Version 1.2.1 changes experience filtering to use range overlap. This is useful when a job advertises a wider range but someone within the user's target range may still qualify.
 
 > Independent community project; not affiliated with or endorsed by Naukri. This README describes the intended behavior and known limitations of this version. Test the exact release you download before relying on it.
 
 ## Features in this version
 
-- Configurable minimum and maximum experience settings.
-- Optional comma-separated job-title keywords, such as `Java Developer, Backend Developer, Spring Boot Developer`.
-- Configurable maximum jobs per run, up to 25.
-- Configurable delay in seconds between processing steps.
-- Assist mode to open job pages and attempt to click Apply.
-- Review-only mode to open matching job pages without clicking Apply.
-- Question forms, external application flows, and uncertain outcomes are intended to remain open for manual review.
+- Includes a job when its advertised experience range overlaps the selected range.
+- Example: selecting 0–4 years includes listings advertised as 3–6 or 3–7 years.
+- Includes ranges such as 2–4 for a selected 0–4 range.
+- Excludes ranges with no overlap, such as 5–8 when selecting 0–4.
+- Recognizes common Fresher/Freshers/Entry-level labels as zero-experience listings when the selected range includes zero, where those labels are detected.
 
 ## Installation
 
@@ -34,13 +32,13 @@ Version 1.2.0 adds configurable experience targeting and processing settings, so
 
 ## Settings and behavior
 
-Set the minimum and maximum experience, optional job-title keywords, maximum jobs, delay, and mode in the extension popup.
+Configure the minimum and maximum experience in the popup. A listing is eligible when `advertised_minimum <= selected_maximum` and `advertised_maximum >= selected_minimum`.
 
 ## Known limitations
 
-- At this stage, experience matching was described as requiring the advertised range to fit within the selected range; overlap matching was introduced later.
-- Application and success detection are best-effort and should be supervised.
-- Only currently loaded listings are processed.
+- Experience text must be recognizable by the extension; unusual formats may be skipped.
+- Range overlap does not guarantee that an employer will accept every applicant in the overlap.
+- All application flows still require user supervision.
 
 
 ## Responsible use and limitations
@@ -59,6 +57,8 @@ Set the minimum and maximum experience, optional job-title keywords, maximum job
 - **v1.0.0:** Initial prototype.
 - **v1.1.0:** Job-card detection based on `article.jobTuple` and `data-job-id`.
 - **v1.2.0:** Configurable experience range, job-title keywords, batch limit, delay, and review-only mode.
+- **v1.2.1:** Experience-range overlap matching.
+
 
 ## Feedback
 
