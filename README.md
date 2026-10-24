@@ -1,16 +1,18 @@
-# Naukri Job Helper — v1.2.1
+# Naukri Job Helper — v1.3.0
 
-Version 1.2.1 changes experience filtering to use range overlap. This is useful when a job advertises a wider range but someone within the user's target range may still qualify.
+Version 1.3.0 improves the popup's clarity and status presentation, while keeping configurable job and experience filters.
 
 > Independent community project; not affiliated with or endorsed by Naukri. This README describes the intended behavior and known limitations of this version. Test the exact release you download before relying on it.
 
 ## Features in this version
 
-- Includes a job when its advertised experience range overlaps the selected range.
-- Example: selecting 0–4 years includes listings advertised as 3–6 or 3–7 years.
-- Includes ranges such as 2–4 for a selected 0–4 range.
-- Excludes ranges with no overlap, such as 5–8 when selecting 0–4.
-- Recognizes common Fresher/Freshers/Entry-level labels as zero-experience listings when the selected range includes zero, where those labels are detected.
+- Adds a direct link to the Naukri Recommended Jobs page: https://www.naukri.com/mnjuser/recommendedjobs.
+- Removes the long experience-filter explanation from the popup.
+- Shows the Running status in bold sky blue and the Stopped status in bold black.
+- Renames the successful-application counter to `Successfully Applied`.
+- Displays a numbered disclaimer: question forms and external application sites remain open; tabs close only after a clear success message; users should review applications and stop if a page behaves unexpectedly.
+- Adds a report-issue and feedback link: https://form.typeform.com/to/UaokdTEa.
+- Retains configurable experience range, optional job categories, maximum jobs, delay, Assist mode, and Review-only mode.
 
 ## Installation
 
@@ -32,13 +34,13 @@ Version 1.2.1 changes experience filtering to use range overlap. This is useful 
 
 ## Settings and behavior
 
-Configure the minimum and maximum experience in the popup. A listing is eligible when `advertised_minimum <= selected_maximum` and `advertised_maximum >= selected_minimum`.
+Recommended starting page: https://www.naukri.com/mnjuser/recommendedjobs. Set experience range, optional categories, batch size, delay, and mode in the popup. Test with one or two jobs after updating.
 
 ## Known limitations
 
-- Experience text must be recognizable by the extension; unusual formats may be skipped.
-- Range overlap does not guarantee that an employer will accept every applicant in the overlap.
-- All application flows still require user supervision.
+- Selectors and success detection depend on Naukri's current markup and may need maintenance.
+- Duplicate-application prevention should not be assumed to be perfect; check application status before applying.
+- Only currently loaded job cards are processed; the extension does not automatically paginate through all search results.
 
 
 ## Responsible use and limitations
@@ -58,7 +60,9 @@ Configure the minimum and maximum experience in the popup. A listing is eligible
 - **v1.1.0:** Job-card detection based on `article.jobTuple` and `data-job-id`.
 - **v1.2.0:** Configurable experience range, job-title keywords, batch limit, delay, and review-only mode.
 - **v1.2.1:** Experience-range overlap matching.
+- **v1.3.0:** Popup, status display, recommended-jobs link, disclaimer, and feedback-link improvements.
 
+Only changes up to **v1.3.0** are intended to be represented by this version-specific README. For a release, publish the README alongside the matching extension source and ZIP so users can see the correct historical documentation.
 
 ## Feedback
 
