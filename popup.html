@@ -14,12 +14,18 @@
     #start { background:#2557ff; color:white; }
     #stop { background:#eef1f7; color:#172033; }
     #status { margin-top:10px; white-space:pre-wrap; line-height:1.4; color:#44516a; }
+    #runState { font-weight:700; }
+    #runState.running { color:#00a6c7; }
+    #runState.stopped { color:#111827; }
+    .disclaimer { margin:8px 0 0; padding-left:20px; color:#65718a; font-size:11px; line-height:1.45; }
+    .disclaimer li { margin:3px 0; }
+    a { color:#2557ff; }
     .note { color:#65718a; font-size:11px; line-height:1.4; margin-top:8px; }
   </style>
 </head>
 <body>
   <h2>Naukri Job Helper</h2>
-  <div>Runs on the currently open Naukri job-listing page.</div>
+  <div>Start from: <a href="https://www.naukri.com/mnjuser/recommendedjobs" target="_blank" rel="noopener noreferrer">Naukri Recommended Jobs</a></div>
   <label for="categories">Optional job categories (comma-separated)</label>
   <textarea id="categories" placeholder="Java Developer, Backend Developer, Spring Boot Developer"></textarea>
   <div class="note">Leave blank to consider all jobs on the page that match the experience filter. Matching uses job title text.</div>
@@ -31,7 +37,6 @@
     <div><label for="minExperience">Minimum experience (years)</label><input id="minExperience" type="number" min="0" max="40" value="0"></div>
     <div><label for="maxExperience">Maximum experience (years)</label><input id="maxExperience" type="number" min="0" max="40" value="4"></div>
   </div>
-  <div class="note">A job is included only when its full advertised experience range fits within your selected minimum and maximum. Example: 0–4 includes 0–2 and 2–4, but excludes 3–5.</div>
   <label for="mode">Mode</label>
   <select id="mode">
     <option value="assist">Assist: open job tabs and click Apply</option>
@@ -39,8 +44,13 @@
   </select>
   <button id="start">Start on this page</button>
   <button id="stop">Stop after current job</button>
-  <div id="status">Ready. Choose options and start.</div>
-  <div class="note">Question forms and external application sites are left open. A Naukri tab is closed only when a clear application-success message is detected. Check every application and stop if a page behaves unexpectedly.</div>
+  <div id="status"><span id="runState" class="stopped">Stopped</span><div>Ready. Choose options and start.</div></div>
+  <ol class="disclaimer">
+    <li>Question forms and external application sites are left open.</li>
+    <li>A Naukri tab is closed only when a clear application-success message is detected.</li>
+    <li>Check every application and stop if a page behaves unexpectedly.</li>
+    <li><a href="https://form.typeform.com/to/UaokdTEa" target="_blank" rel="noopener noreferrer">Report an issue or send feedback</a>.</li>
+  </ol>
   <script src="popup.js"></script>
 </body>
 </html>

@@ -7,8 +7,10 @@ function experienceMatches(text, minExperience = 0, maxExperience = 4) {
   const matches = [...t.matchAll(/\b(\d+)\s*(?:-|to)\s*(\d+)\s*(?:years?|yrs?)\b/ig)];
   for (const m of matches) {
     const min = Number(m[1]), max = Number(m[2]);
-    // Require the entire advertised range to sit inside the user's selected range.
-    if (min <= max && min >= minExperience && max <= maxExperience) return true;
+    // Include jobs whose advertised range overlaps the selected range.
+    // Example: selected 0–4 includes advertised 3–6 and 3–7 because those jobs
+    // can consider candidates with 3–4 years of experience.
+    if (min <= max && min <= maxExperience && max >= minExperience) return true;
   }
   if (/\b(fresher|freshers|entry[- ]level)\b/i.test(t)) return minExperience <= 0 && maxExperience >= 0;
   return false;

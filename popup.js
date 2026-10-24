@@ -3,9 +3,22 @@ const $ = (id) => document.getElementById(id);
 async function refreshStatus() {
   const state = await chrome.storage.local.get(['naukriRunState']);
   const s = state.naukriRunState;
+  const status = $('status');
+  status.replaceChildren();
+
+  const stateLabel = document.createElement('span');
+  stateLabel.id = 'runState';
+  stateLabel.className = s?.running ? 'running' : 'stopped';
+  stateLabel.textContent = s?.running ? 'Running' : 'Stopped';
+  status.appendChild(stateLabel);
+
+  const details = document.createElement('div');
   if (s) {
-    $('status').textContent = `${s.running ? 'Running' : 'Stopped'}\nOpened: ${s.opened || 0} / ${s.maxJobs || 25}\nApplied-success pages closed: ${s.success || 0}\nLeft open for review: ${s.leftOpen || 0}\n${s.message || ''}`;
+    details.textContent = `Opened: ${s.opened || 0} / ${s.maxJobs || 25}\nSuccessfully Applied: ${s.success || 0}\nLeft open for review: ${s.leftOpen || 0}\n${s.message || ''}`;
+  } else {
+    details.textContent = 'Ready. Choose options and start.';
   }
+  status.appendChild(details);
 }
 
 $('start').addEventListener('click', async () => {
